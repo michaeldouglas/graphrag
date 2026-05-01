@@ -1,0 +1,2 @@
+# graphrag
+Curso Alura GraphRAG
