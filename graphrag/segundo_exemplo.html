@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>FalkorDB • Algoritmos em Grafos</title>
+
+    <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background: #020617;
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        .left-panel {
+            width: 360px;
+            background: #0f172a;
+            border-right: 1px solid #1e293b;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        #cy {
+            flex: 1;
+            background: #111827;
+        }
+
+        .right-panel {
+            width: 420px;
+            background: #020617;
+            border-left: 1px solid #1e293b;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .logo {
+            font-size: 34px;
+            font-weight: bold;
+            color: #22c55e;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            font-size: 30px;
+            margin-bottom: 18px;
+        }
+
+        h2 {
+            color: #60a5fa;
+            margin-top: 26px;
+            margin-bottom: 14px;
+        }
+
+        p {
+            color: #cbd5e1;
+            line-height: 1.8;
+            margin-bottom: 14px;
+        }
+
+        .card {
+            background: #111827;
+            border: 1px solid #1e293b;
+            border-radius: 16px;
+            padding: 18px;
+            margin-top: 18px;
+        }
+
+        .formula {
+            margin-top: 18px;
+            background: #020617;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 16px;
+            color: #93c5fd;
+            line-height: 1.9;
+            font-family: monospace;
+        }
+
+        .algorithm-box {
+            margin-top: 16px;
+            background: #172554;
+            border-left: 4px solid #60a5fa;
+            border-radius: 12px;
+            padding: 16px;
+            line-height: 1.8;
+        }
+
+        .step {
+            margin-top: 14px;
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 14px;
+            line-height: 1.8;
+        }
+
+        .code-box {
+            margin-top: 18px;
+            background: black;
+            border-radius: 12px;
+            border: 1px solid #334155;
+            padding: 16px;
+        }
+
+        .code-title {
+            color: #22c55e;
+            margin-bottom: 12px;
+            font-weight: bold;
+        }
+
+        .code {
+            white-space: pre-line;
+            color: #d1fae5;
+            font-family: monospace;
+            line-height: 1.8;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 12px;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            background: #16a34a;
+            color: white;
+            font-size: 15px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: #22c55e;
+        }
+
+        .query-result {
+            margin-top: 18px;
+            background: #14532d;
+            color: #dcfce7;
+            border-radius: 12px;
+            padding: 16px;
+            line-height: 1.8;
+        }
+
+        .comparison {
+            margin-top: 16px;
+            background: #111827;
+            border-radius: 14px;
+            border: 1px solid #1e293b;
+            overflow: hidden;
+        }
+
+        .comparison-header {
+            display: flex;
+            background: #1e293b;
+        }
+
+        .comparison-header div {
+            width: 50%;
+            padding: 12px;
+            font-weight: bold;
+        }
+
+        .comparison-body {
+            display: flex;
+        }
+
+        .comparison-body div {
+            width: 50%;
+            padding: 16px;
+            line-height: 1.8;
+        }
+
+        .stat {
+            background: #111827;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 14px;
+            margin-top: 12px;
+            line-height: 1.8;
+        }
+
+        .highlight-text {
+            color: #fbbf24;
+        }
+
+        .narration {
+            margin-top: 18px;
+            background: #3f1d0f;
+            border-radius: 14px;
+            padding: 16px;
+            line-height: 1.9;
+            color: #ffedd5;
+        }
+
+        .legend-item {
+            margin-top: 10px;
+            color: #cbd5e1;
+        }
+
+        .academic-reference {
+            margin-top: 20px;
+            background: #111827;
+            border: 1px solid #334155;
+            border-radius: 14px;
+            padding: 16px;
+            line-height: 1.8;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="left-panel">
+
+            <div class="logo">
+                FalkorDB
+            </div>
+
+            <p>
+                Explorando algoritmos em grafos,
+                traversal e GraphRAG visualmente.
+            </p>
+
+            <div class="card">
+
+                <h2>Teoria dos Grafos</h2>
+
+                <p>
+                    Um grafo representa entidades conectadas.
+                </p>
+
+                <div class="formula">
+
+                    G = (V, E)
+
+                    <br><br>
+
+                    V = vértices (nós)
+                    <br>
+                    E = arestas (edges)
+
+                </div>
+
+            </div>
+
+            <div class="algorithm-box">
+
+                <b>O diferencial do FalkorDB</b>
+
+                <br><br>
+
+                O FalkorDB navega conexões
+                diretamente através dos relacionamentos.
+
+                <br><br>
+
+                Isso é ideal para:
+
+                <br><br>
+
+                • IA
+                <br>
+                • GraphRAG
+                <br>
+                • recomendação
+                <br>
+                • análise de redes
+                <br>
+                • inferência
+
+            </div>
+
+            <div class="academic-reference">
+
+                <b>Conceitos acadêmicos usados</b>
+
+                <br><br>
+
+                • adjacência
+                <br>
+                • conectividade
+                <br>
+                • caminhos
+                <br>
+                • DFS
+                <br>
+                • BFS
+                <br>
+                • menor caminho
+                <br>
+                • grafos direcionados
+                <br>
+                • listas de adjacência
+
+            </div>
+
+            <div class="card">
+
+                <h2>Legenda</h2>
+
+                <div class="legend-item">
+                    🔵 Pessoa
+                </div>
+
+                <div class="legend-item">
+                    🟢 Interesse
+                </div>
+
+                <div class="legend-item">
+                    🟣 Característica
+                </div>
+
+                <div class="legend-item">
+                    🟠 Traversal
+                </div>
+
+                <div class="legend-item">
+                    ⚪ Vizinho adjacente
+                </div>
+
+            </div>
+
+        </div>
+
+        <div id="cy"></div>
+
+        <div class="right-panel">
+
+            <div class="logo">
+                Algoritmos
+            </div>
+
+            <p>
+                Clique nos elementos ou execute algoritmos.
+            </p>
+
+            <button onclick="runDFS()">
+                Busca em Profundidade (DFS)
+            </button>
+
+            <button onclick="runBFS()">
+                Busca em Largura (BFS)
+            </button>
+
+            <button onclick="runShortestPath()">
+                Menor Caminho
+            </button>
+
+            <button onclick="showAdjacency()">
+                Lista de Adjacência
+            </button>
+
+            <button onclick="showSQLvsGraph()">
+                SQL vs FalkorDB
+            </button>
+
+            <button onclick="showGraphRAG()">
+                GraphRAG
+            </button>
+
+            <button onclick="resetGraph()">
+                Resetar
+            </button>
+
+            <div id="info" class="card">
+
+                <h2>Banco de grafos</h2>
+
+                <p>
+                    Bancos relacionais pensam em tabelas.
+
+                    <br><br>
+
+                    O FalkorDB pensa em conexões.
+                </p>
+
+            </div>
+
+            <div id="result"></div>
+
+        </div>
+
+    </div>
+
+    <script>
+
+        const elements = [
+
+            { data: { id: 'roberto', label: 'Roberto', type: 'person' } },
+            { data: { id: 'carlos', label: 'Carlos', type: 'person' } },
+            { data: { id: 'fernanda', label: 'Fernanda', type: 'person' } },
+            { data: { id: 'lucas', label: 'Lucas', type: 'person' } },
+            { data: { id: 'mariana', label: 'Mariana', type: 'person' } },
+
+            { data: { id: 'programacao', label: 'Programação', type: 'interest' } },
+            { data: { id: 'musica', label: 'Música', type: 'interest' } },
+            { data: { id: 'xadrez', label: 'Xadrez', type: 'interest' } },
+
+            { data: { id: 'olhos', label: 'Olhos Verdes', type: 'trait' } },
+
+            { data: { source: 'roberto', target: 'carlos', label: 'pai_de' } },
+            { data: { source: 'roberto', target: 'fernanda', label: 'pai_de' } },
+            { data: { source: 'fernanda', target: 'lucas', label: 'casado_com' } },
+            { data: { source: 'carlos', target: 'mariana', label: 'casado_com' } },
+
+            { data: { source: 'carlos', target: 'programacao', label: 'gosta_de' } },
+            { data: { source: 'lucas', target: 'musica', label: 'gosta_de' } },
+            { data: { source: 'roberto', target: 'xadrez', label: 'gosta_de' } },
+
+            { data: { source: 'fernanda', target: 'olhos', label: 'possui' } },
+            { data: { source: 'lucas', target: 'olhos', label: 'possui' } }
+
+        ];
+
+        const cy = cytoscape({
+
+            container: document.getElementById('cy'),
+
+            elements,
+
+            style: [
+
+                {
+                    selector: 'node',
+                    style: {
+                        'label': 'data(label)',
+                        'color': 'white',
+                        'background-color': '#2563eb',
+                        'text-valign': 'center',
+                        'text-halign': 'center',
+                        'font-size': '11px',
+                        'width': 72,
+                        'height': 72
+                    }
+                },
+
+                {
+                    selector: 'node[type = "interest"]',
+                    style: {
+                        'background-color': '#16a34a'
+                    }
+                },
+
+                {
+                    selector: 'node[type = "trait"]',
+                    style: {
+                        'background-color': '#9333ea'
+                    }
+                },
+
+                {
+                    selector: 'edge',
+                    style: {
+                        'curve-style': 'bezier',
+                        'target-arrow-shape': 'triangle',
+                        'target-arrow-color': '#64748b',
+                        'line-color': '#64748b',
+                        'width': 3,
+                        'label': 'data(label)',
+                        'font-size': '9px',
+                        'color': '#cbd5e1'
+                    }
+                },
+
+                {
+                    selector: '.highlight',
+                    style: {
+                        'background-color': '#f59e0b',
+                        'line-color': '#f59e0b',
+                        'target-arrow-color': '#f59e0b',
+                        'width': 6
+                    }
+                }
+
+            ],
+
+            layout: {
+                name: 'cose',
+                animate: true,
+                padding: 40
+            }
+
+        });
+
+        function clearHighlights() {
+            cy.elements().removeClass('highlight');
+        }
+
+        async function animateSequence(sequence) {
+
+            clearHighlights();
+
+            for (const item of sequence) {
+
+                cy.$(item).addClass('highlight');
+
+                await new Promise(resolve =>
+                    setTimeout(resolve, 700)
+                );
+            }
+        }
+
+        cy.on('tap', 'node', function (evt) {
+
+            clearHighlights();
+
+            const node = evt.target;
+
+            node.addClass('highlight');
+
+            node.connectedEdges().addClass('highlight');
+
+            const degree = node.degree();
+
+            document.getElementById('info').innerHTML = `
+
+                <div class="card">
+
+                    <h2>${node.data('label')}</h2>
+
+                    <p>
+
+                        Este elemento representa um
+                        <span class="highlight-text">
+                            vértice
+                        </span>
+                        do grafo.
+
+                    </p>
+
+                    <div class="step">
+
+                        <b>Adjacência</b>
+
+                        <br><br>
+
+                        Vértices conectados são chamados
+                        de adjacentes.
+
+                    </div>
+
+                    <div class="step">
+
+                        <b>Degree</b>
+
+                        <br><br>
+
+                        Número de conexões:
+                        ${degree}
+
+                    </div>
+
+                    <div class="code-box">
+
+                        <div class="code-title">
+                            FalkorDB Query
+                        </div>
+
+                        <div class="code">
+
+MATCH (n)
+WHERE n.name = '${node.data('label')}'
+RETURN n
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            `;
+
+        });
+
+        cy.on('tap', 'edge', function (evt) {
+
+            clearHighlights();
+
+            const edge = evt.target;
+
+            edge.addClass('highlight');
+
+            edge.source().addClass('highlight');
+            edge.target().addClass('highlight');
+
+            document.getElementById('info').innerHTML = `
+
+                <div class="card">
+
+                    <h2>Aresta / Edge</h2>
+
+                    <p>
+
+                        Relacionamentos conectam entidades.
+
+                    </p>
+
+                    <div class="formula">
+
+(v1)-[e]->(v2)
+
+                    </div>
+
+                    <div class="step">
+
+                        <b>Grafo orientado</b>
+
+                        <br><br>
+
+                        A direção importa.
+
+                        <br><br>
+
+                        Roberto → pai_de → Carlos
+
+                    </div>
+
+                    <div class="step">
+
+                        <b>Adjacência</b>
+
+                        <br><br>
+
+                        Dois vértices conectados
+                        são vizinhos adjacentes.
+
+                    </div>
+
+                </div>
+
+            `;
+
+        });
+
+        async function runDFS() {
+
+            await animateSequence([
+
+                '#roberto',
+                '#carlos',
+                '#programacao',
+                '#mariana'
+
+            ]);
+
+            document.getElementById('result').innerHTML = `
+
+                <div class="query-result">
+
+                    <b>DFS • Busca em Profundidade</b>
+
+                    <br><br>
+
+                    A DFS explora o caminho
+                    mais fundo possível.
+
+                    <br><br>
+
+                    Roberto
+                    →
+                    Carlos
+                    →
+                    Programação
+
+                    <br><br>
+
+                    Depois o algoritmo volta
+                    para explorar outros caminhos.
+
+                </div>
+
+                <div class="narration">
+
+                    <b>O FalkorDB está pensando:</b>
+
+                    <br><br>
+
+                    1. encontrei Roberto
+                    <br>
+                    2. encontrei Carlos
+                    <br>
+                    3. continuei aprofundando
+                    <br>
+                    4. encontrei Programação
+                    <br>
+                    5. voltei para explorar outros caminhos
+
+                </div>
+
+            `;
+        }
+
+        async function runBFS() {
+
+            await animateSequence([
+
+                '#roberto',
+                '#carlos',
+                '#fernanda',
+                '#programacao',
+                '#lucas'
+
+            ]);
+
+            document.getElementById('result').innerHTML = `
+
+                <div class="query-result">
+
+                    <b>BFS • Busca em Largura</b>
+
+                    <br><br>
+
+                    A BFS explora os vizinhos
+                    primeiro.
+
+                    <br><br>
+
+                    Roberto
+                    →
+                    Carlos
+                    →
+                    Fernanda
+
+                    <br><br>
+
+                    Só depois aprofunda.
+
+                </div>
+
+                <div class="step">
+
+                    BFS utiliza uma fila (queue).
+
+                </div>
+
+            `;
+        }
+
+        async function runShortestPath() {
+
+            await animateSequence([
+
+                '#roberto',
+                '#fernanda',
+                '#lucas',
+                '#musica'
+
+            ]);
+
+            document.getElementById('result').innerHTML = `
+
+                <div class="query-result">
+
+                    <b>Menor Caminho</b>
+
+                    <br><br>
+
+                    Roberto
+                    →
+                    Fernanda
+                    →
+                    Lucas
+                    →
+                    Música
+
+                    <br><br>
+
+                    Distância:
+                    3 arestas
+
+                </div>
+
+                <div class="code-box">
+
+                    <div class="code-title">
+                        Query FalkorDB
+                    </div>
+
+                    <div class="code">
+
+MATCH p = shortestPath(
+    (a)-[*]->(b)
+)
+RETURN p
+
+                    </div>
+
+                </div>
+
+            `;
+        }
+
+        function showAdjacency() {
+
+            document.getElementById('result').innerHTML = `
+
+                <div class="query-result">
+
+                    <b>Lista de Adjacência</b>
+
+                    <br><br>
+
+                    Roberto:
+                    Carlos, Fernanda, Xadrez
+
+                    <br><br>
+
+                    Carlos:
+                    Mariana, Programação
+
+                    <br><br>
+
+                    Fernanda:
+                    Lucas, Olhos Verdes
+
+                </div>
+
+                <div class="step">
+
+                    FalkorDB internamente é extremamente
+                    otimizado para traversal e vizinhança.
+
+                </div>
+
+            `;
+        }
+
+        function showSQLvsGraph() {
+
+            document.getElementById('result').innerHTML = `
+
+                <div class="comparison">
+
+                    <div class="comparison-header">
+
+                        <div>SQL</div>
+                        <div>FalkorDB</div>
+
+                    </div>
+
+                    <div class="comparison-body">
+
+                        <div>
+
+SELECT *
+FROM pessoas
+JOIN filhos
+JOIN hobbies
+JOIN interesses
+
+                        </div>
+
+                        <div>
+
+MATCH (p)-[:pai_de]->(f)
+RETURN f
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="query-result">
+
+                    SQL pensa em tabelas.
+
+                    <br><br>
+
+                    FalkorDB pensa em conexões.
+
+                </div>
+
+            `;
+        }
+
+        function showGraphRAG() {
+
+            document.getElementById('result').innerHTML = `
+
+                <div class="query-result">
+
+                    <b>GraphRAG</b>
+
+                    <br><br>
+
+                    Texto
+                    →
+                    entidades
+                    →
+                    relacionamentos
+                    →
+                    FalkorDB
+                    →
+                    contexto conectado
+                    →
+                    LLM
+
+                </div>
+
+                <div class="step">
+
+                    O LLM deixa de olhar
+                    apenas texto.
+
+                    <br><br>
+
+                    Ele passa a entender:
+                    <br><br>
+
+                    • entidades
+                    <br>
+                    • conexões
+                    <br>
+                    • contexto
+                    <br>
+                    • relacionamentos
+
+                </div>
+
+            `;
+        }
+
+        function resetGraph() {
+
+            clearHighlights();
+
+            cy.fit(null, 100);
+
+            document.getElementById('result').innerHTML = '';
+
+        }
+
+    </script>
+
+</body>
+
+</html>
