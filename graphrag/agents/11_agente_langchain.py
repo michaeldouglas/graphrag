@@ -1,4 +1,4 @@
-# Exemplo 11: agente LangChain usando Ollama/gpt-oss para consultar o grafo social
+# agente LangChain usando Ollama/gpt-oss para consultar o grafo social
 
 import os
 from typing import List
@@ -168,7 +168,7 @@ agent = create_agent(
 # LOOP INTERATIVO
 # =========================
 
-print("Exemplo 11: agente LangChain + Ollama/gpt-oss")
+print("Exemplo: Quando amigos o joão tem?")
 print("Digite 'sair' para encerrar.")
 
 while True:
