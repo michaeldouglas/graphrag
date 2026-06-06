@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>FalkorDB - Grafos na Prática</title>
+
+    <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background: #020617;
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        .graph-wrapper {
+            width: 72%;
+            display: flex;
+            height: 100%;
+        }
+
+        #academic-panel {
+            width: 340px;
+            background: #0f172a;
+            border-right: 1px solid #1e293b;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        #cy {
+            flex: 1;
+            height: 100%;
+            background: #111827;
+        }
+
+        .sidebar {
+            width: 28%;
+            height: 100%;
+            overflow-y: auto;
+            background: #020617;
+            padding: 24px;
+        }
+
+        h1 {
+            font-size: 30px;
+            margin-bottom: 18px;
+            color: #f8fafc;
+        }
+
+        h2 {
+            margin-top: 24px;
+            margin-bottom: 12px;
+            color: #60a5fa;
+            font-size: 21px;
+        }
+
+        p {
+            color: #cbd5e1;
+            line-height: 1.7;
+            margin-bottom: 14px;
+        }
+
+        .logo {
+            font-size: 34px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #22c55e;
+        }
+
+        .step {
+            background: #172554;
+            border-left: 4px solid #60a5fa;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 14px;
+            line-height: 1.7;
+        }
+
+        .card {
+            background: #111827;
+            border: 1px solid #1e293b;
+            border-radius: 16px;
+            padding: 18px;
+            margin-top: 18px;
+        }
+
+        .person-name {
+            font-size: 26px;
+            margin-bottom: 14px;
+            color: #f8fafc;
+        }
+
+        .relation {
+            background: #1e293b;
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 10px;
+            line-height: 1.6;
+        }
+
+        .attribute {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 14px;
+            margin-top: 14px;
+            line-height: 1.7;
+        }
+
+        .academic-box {
+            background: #3f1d0f;
+            color: #ffedd5;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+            line-height: 1.8;
+        }
+
+        .formula {
+            margin-top: 16px;
+            background: #111827;
+            border: 1px solid #334155;
+            padding: 16px;
+            border-radius: 12px;
+            font-family: monospace;
+            line-height: 1.8;
+            color: #93c5fd;
+        }
+
+        .cypher-box {
+            margin-top: 18px;
+            background: #000;
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid #334155;
+        }
+
+        .cypher-title {
+            color: #22c55e;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .cypher-query {
+            color: #d1fae5;
+            font-family: monospace;
+            line-height: 1.8;
+            white-space: pre-line;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            margin-top: 12px;
+            background: #16a34a;
+            color: white;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: #22c55e;
+        }
+
+        .query-result {
+            margin-top: 16px;
+            background: #14532d;
+            color: #dcfce7;
+            padding: 16px;
+            border-radius: 12px;
+            line-height: 1.7;
+        }
+
+        .legend {
+            background: #111827;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 18px;
+        }
+
+        .legend-item {
+            margin-top: 10px;
+            color: #cbd5e1;
+            line-height: 1.7;
+        }
+
+        .falkordb-box {
+            background: #052e16;
+            border: 1px solid #166534;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 18px;
+            color: #dcfce7;
+            line-height: 1.8;
+        }
+
+        .stats {
+            margin-top: 18px;
+            background: #111827;
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid #1e293b;
+        }
+
+        .stats-item {
+            margin-top: 10px;
+            color: #cbd5e1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="graph-wrapper">
+
+            <div id="academic-panel">
+
+                <div class="logo">
+                    FalkorDB
+                </div>
+
+                <p>
+                    Banco de dados orientado a grafos
+                    otimizado para relacionamentos,
+                    GraphRAG e IA.
+                </p>
+
+                <div class="academic-box">
+
+                    <b>Teoria dos Grafos</b>
+
+                    <br><br>
+
+                    Grafos representam entidades conectadas.
+
+                    <br><br>
+
+                    Um grafo é definido matematicamente como:
+
+                </div>
+
+                <div class="formula">
+
+                    G = (V, E)
+
+                    <br><br>
+
+                    V = conjunto de vértices
+                    <br>
+                    E = conjunto de arestas
+
+                </div>
+
+                <div class="falkordb-box">
+
+                    <b>FalkorDB</b>
+
+                    <br><br>
+
+                    O FalkorDB permite navegar
+                    relacionamentos em tempo real.
+
+                    <br><br>
+
+                    Isso é ideal para:
+                    <br><br>
+
+                    • GraphRAG
+                    <br>
+                    • IA
+                    <br>
+                    • recomendação
+                    <br>
+                    • redes sociais
+                    <br>
+                    • conhecimento conectado
+
+                </div>
+
+            </div>
+
+            <div id="cy"></div>
+
+        </div>
+
+        <div class="sidebar">
+
+            <div class="logo">
+                FalkorDB
+            </div>
+
+            <p>
+                Explorando bancos de dados orientados a grafos.
+            </p>
+
+            <div class="step">
+                Grafos armazenam entidades e conexões.
+            </div>
+
+            <div class="step">
+                Relacionamentos possuem significado.
+            </div>
+
+            <div class="step">
+                O FalkorDB permite percorrer conexões rapidamente.
+            </div>
+
+            <div class="step">
+                Clique em nós e arestas para explorar.
+            </div>
+
+            <div id="info" class="card">
+
+                <div class="person-name">
+                    Explore o grafo
+                </div>
+
+                <p>
+                    Clique em qualquer elemento.
+                </p>
+
+            </div>
+
+            <h2>Consultas FalkorDB</h2>
+
+            <button onclick="showChildren()">
+                MATCH filhos
+            </button>
+
+            <button onclick="showInheritance()">
+                Herança genética
+            </button>
+
+            <button onclick="showTraversal()">
+                Traversal no grafo
+            </button>
+
+            <button onclick="showRecommendations()">
+                Sistema de recomendação
+            </button>
+
+            <button onclick="showGraphRAG()">
+                GraphRAG
+            </button>
+
+            <button onclick="resetGraph()">
+                Resetar grafo
+            </button>
+
+            <div id="result"></div>
+
+            <div class="stats">
+
+                <h2>Estatísticas</h2>
+
+                <div class="stats-item">
+                    Nós: 13
+                </div>
+
+                <div class="stats-item">
+                    Arestas: 15
+                </div>
+
+                <div class="stats-item">
+                    Banco: FalkorDB
+                </div>
+
+                <div class="stats-item">
+                    Modelo: Property Graph
+                </div>
+
+            </div>
+
+            <div class="legend">
+
+                <h2>Glossário</h2>
+
+                <div class="legend-item">
+                    🔵 Nó / Vértice
+                </div>
+
+                <div class="legend-item">
+                    ➜ Aresta / Edge
+                </div>
+
+                <div class="legend-item">
+                    🟣 Característica
+                </div>
+
+                <div class="legend-item">
+                    🟢 Interesse
+                </div>
+
+                <div class="legend-item">
+                    🟠 Traversal
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+
+        const peopleData = {
+
+            roberto: {
+                idade: 58,
+                profissão: "Engenheiro",
+                olhos: "Castanhos",
+                hobby: "Xadrez"
+            },
+
+            carlos: {
+                idade: 32,
+                profissão: "Desenvolvedor",
+                olhos: "Castanhos",
+                hobby: "Programação"
+            },
+
+            fernanda: {
+                idade: 28,
+                profissão: "Designer",
+                olhos: "Verdes",
+                hobby: "Pintura"
+            },
+
+            mariana: {
+                idade: 30,
+                profissão: "Médica",
+                olhos: "Azuis",
+                hobby: "Leitura"
+            },
+
+            lucas: {
+                idade: 34,
+                profissão: "Professor",
+                olhos: "Verdes",
+                hobby: "Música"
+            }
+
+        };
+
+        const initialElements = [
+
+            { data: { id: 'roberto', label: 'Roberto', type: 'person' } },
+            { data: { id: 'helena', label: 'Helena', type: 'person' } },
+            { data: { id: 'carlos', label: 'Carlos', type: 'person' } },
+            { data: { id: 'fernanda', label: 'Fernanda', type: 'person' } },
+            { data: { id: 'mariana', label: 'Mariana', type: 'person' } },
+            { data: { id: 'lucas', label: 'Lucas', type: 'person' } },
+
+            { data: { id: 'castanhos', label: 'Olhos Castanhos', type: 'trait' } },
+            { data: { id: 'verdes', label: 'Olhos Verdes', type: 'trait' } },
+
+            { data: { id: 'xadrez', label: 'Xadrez', type: 'interest' } },
+            { data: { id: 'programacao', label: 'Programação', type: 'interest' } },
+            { data: { id: 'pintura', label: 'Pintura', type: 'interest' } },
+            { data: { id: 'musica', label: 'Música', type: 'interest' } },
+            { data: { id: 'leitura', label: 'Leitura', type: 'interest' } },
+
+            { data: { source: 'roberto', target: 'carlos', label: 'pai_de' } },
+            { data: { source: 'roberto', target: 'fernanda', label: 'pai_de' } },
+            { data: { source: 'helena', target: 'carlos', label: 'mãe_de' } },
+            { data: { source: 'helena', target: 'fernanda', label: 'mãe_de' } },
+            { data: { source: 'carlos', target: 'mariana', label: 'casado_com' } },
+            { data: { source: 'fernanda', target: 'lucas', label: 'casado_com' } },
+
+            { data: { source: 'roberto', target: 'castanhos', label: 'possui' } },
+            { data: { source: 'carlos', target: 'castanhos', label: 'herdou' } },
+            { data: { source: 'fernanda', target: 'verdes', label: 'possui' } },
+            { data: { source: 'lucas', target: 'verdes', label: 'possui' } },
+
+            { data: { source: 'roberto', target: 'xadrez', label: 'gosta_de' } },
+            { data: { source: 'carlos', target: 'programacao', label: 'gosta_de' } },
+            { data: { source: 'fernanda', target: 'pintura', label: 'gosta_de' } },
+            { data: { source: 'lucas', target: 'musica', label: 'gosta_de' } },
+            { data: { source: 'mariana', target: 'leitura', label: 'gosta_de' } }
+
+        ];
+
+        const cy = cytoscape({
+
+            container: document.getElementById('cy'),
+
+            elements: initialElements,
+
+            style: [
+
+                {
+                    selector: 'node',
+                    style: {
+                        'background-color': '#16a34a',
+                        'label': 'data(label)',
+                        'color': 'white',
+                        'text-wrap': 'wrap',
+                        'text-max-width': '70px',
+                        'text-valign': 'center',
+                        'text-halign': 'center',
+                        'font-size': '11px',
+                        'width': '70px',
+                        'height': '70px'
+                    }
+                },
+
+                {
+                    selector: 'node[type = "trait"]',
+                    style: {
+                        'background-color': '#7c3aed'
+                    }
+                },
+
+                {
+                    selector: 'node[type = "interest"]',
+                    style: {
+                        'background-color': '#0ea5e9'
+                    }
+                },
+
+                {
+                    selector: 'edge',
+                    style: {
+                        'curve-style': 'bezier',
+                        'width': 3,
+                        'line-color': '#64748b',
+                        'target-arrow-color': '#64748b',
+                        'target-arrow-shape': 'triangle',
+                        'label': 'data(label)',
+                        'font-size': '9px',
+                        'color': '#cbd5e1'
+                    }
+                },
+
+                {
+                    selector: '.highlight',
+                    style: {
+                        'background-color': '#f59e0b',
+                        'line-color': '#f59e0b',
+                        'target-arrow-color': '#f59e0b',
+                        'width': 6
+                    }
+                }
+
+            ],
+
+            layout: {
+                name: 'cose',
+                animate: true,
+                padding: 40
+            }
+
+        });
+
+        function clearHighlights() {
+            cy.elements().removeClass('highlight');
+        }
+
+        function focusNode(node) {
+
+            cy.animate({
+                fit: {
+                    eles: node.closedNeighborhood(),
+                    padding: 120
+                },
+                duration: 900
+            });
+
+        }
+
+        async function animateTraversal(elements) {
+
+            clearHighlights();
+
+            for (const selector of elements) {
+
+                cy.$(selector).addClass('highlight');
+
+                await new Promise(resolve =>
+                    setTimeout(resolve, 700)
+                );
+            }
+        }
+
+        cy.on('tap', 'node', function (evt) {
+
+            clearHighlights();
+
+            const node = evt.target;
+
+            focusNode(node);
+
+            node.addClass('highlight');
+
+            const edges = node.connectedEdges();
+
+            edges.addClass('highlight');
+
+            const connected = edges.connectedNodes();
+
+            connected.addClass('highlight');
+
+            const degree = node.degree();
+
+            document.getElementById('academic-panel').innerHTML = `
+
+                <div class="logo">
+                    FalkorDB
+                </div>
+
+                <div class="academic-box">
+
+                    <b>Nó / Vértice</b>
+
+                    <br><br>
+
+                    Este elemento representa uma entidade.
+
+                    <br><br>
+
+                    Bancos de grafos armazenam entidades
+                    conectadas por relacionamentos.
+
+                </div>
+
+                <div class="formula">
+
+                    G = (V, E)
+
+                    <br><br>
+
+                    V = vértices
+                    <br>
+                    E = arestas
+
+                </div>
+
+                <div class="attribute">
+
+                    <b>Degree:</b> ${degree}
+
+                    <br><br>
+
+                    Degree representa quantas conexões
+                    este nó possui.
+
+                </div>
+
+                <div class="cypher-box">
+
+                    <div class="cypher-title">
+                        Query FalkorDB
+                    </div>
+
+                    <div class="cypher-query">
+
+MATCH (n)
+WHERE n.name = '${node.data('label')}'
+RETURN n
+
+                    </div>
+
+                </div>
+
+            `;
+
+            let relations = '';
+
+            edges.forEach(edge => {
+
+                relations += `
+
+                    <div class="relation">
+
+                        ${edge.source().data('label')}
+                        →
+                        <b>${edge.data('label')}</b>
+                        →
+                        ${edge.target().data('label')}
+
+                    </div>
+
+                `;
+
+            });
+
+            document.getElementById('info').innerHTML = `
+
+                <div class="person-name">
+                    ${node.data('label')}
+                </div>
+
+                <p>
+                    Entidade selecionada no FalkorDB.
+                </p>
+
+                ${relations}
+
+            `;
+
+        });
+
+        cy.on('tap', 'edge', function (evt) {
+
+            clearHighlights();
+
+            const edge = evt.target;
+
+            edge.addClass('highlight');
+
+            edge.source().addClass('highlight');
+            edge.target().addClass('highlight');
+
+            document.getElementById('academic-panel').innerHTML = `
+
+                <div class="logo">
+                    FalkorDB
+                </div>
+
+                <div class="academic-box">
+
+                    <b>Aresta / Relationship</b>
+
+                    <br><br>
+
+                    Relacionamentos conectam entidades.
+
+                    <br><br>
+
+                    No FalkorDB:
+                    <br><br>
+
+                    • conexões são nativas
+                    <br>
+                    • traversal é rápido
+                    <br>
+                    • relacionamentos possuem semântica
+
+                </div>
+
+                <div class="formula">
+
+                    (v1)-[e]->(v2)
+
+                </div>
+
+                <div class="cypher-box">
+
+                    <div class="cypher-title">
+                        Query FalkorDB
+                    </div>
+
+                    <div class="cypher-query">
+
+MATCH (a)-[r]->(b)
+RETURN a, r, b
+
+                    </div>
+
+                </div>
+
+            `;
+
+            document.getElementById('info').innerHTML = `
+
+                <div class="person-name">
+                    Relationship
+                </div>
+
+                <div class="relation">
+
+                    ${edge.source().data('label')}
+                    →
+                    <b>${edge.data('label')}</b>
+                    →
+                    ${edge.target().data('label')}
+
+                </div>
+
+            `;
+
+        });
+
+        function highlight(ids) {
+
+            clearHighlights();
+
+            ids.forEach(id => {
+                cy.$(id).addClass('highlight');
+            });
+
+        }
+
+        function showChildren() {
+
+            highlight([
+                '#roberto',
+                '#carlos',
+                '#fernanda'
+            ]);
+
+            document.getElementById('result').innerHTML = `
+
+                <div class="query-result">
+
+                    <b>Consulta FalkorDB</b>
+
+                    <div class="cypher-box">
+
+                        <div class="cypher-query">
+
+MATCH (r:Person)-[:pai_de]->(f)
+WHERE r.name = 'Roberto'
+RETURN f
+
+                        </div>
+
+                    </div>
+
+                    Resultado:
+                    <br><br>
+
+                    Roberto → Carlos
+                    <br>
+                    Roberto → Fernanda
+
+                </div>
+
+            `;
+        }
+
+        async function showTraversal() {
+
+            await animateTraversal([
+
+                '#roberto',
+                'edge[source="roberto"][target="carlos"]',
+                '#carlos',
+                'edge[source="carlos"][target="programacao"]',
+                '#programacao'
+
+            ]);
+
+            document.getElementById('result').innerHTML = `
+
+                <div class="query-result">
+
+                    <b>Traversal</b>
+
+                    <br><br>
+
+                    O FalkorDB percorreu o grafo:
+
+                    <br><br>
+
+                    Roberto
+                    →
+                    Carlos
+                    →
+                    Programação
+
+                    <br><br>
+
+                    Traversal é o processo de navegar
+                    entre relacionamentos.
+
+                </div>
+
+            `;
+        }
+
+        function showInheritance() {
+
+            highlight([
+                '#roberto',
+                '#castanhos',
+                '#carlos'
+            ]);
+
+            document.getElementById('result').innerHTML = `
+
+                <div class="query-result">
+
+                    <b>Inferência</b>
+
+                    <br><br>
+
+                    Grafos permitem inferir relações.
+
+                    <br><br>
+
+                    Roberto → olhos castanhos
+                    <br>
+                    Carlos → herdou olhos castanhos
+
+                </div>
+
+            `;
+        }
+
+        function showRecommendations() {
+
+            highlight([
+                '#carlos',
+                '#programacao',
+                '#mariana',
+                '#leitura'
+            ]);
+
+            document.getElementById('result').innerHTML = `
+
+                <div class="query-result">
+
+                    <b>Sistema de recomendação</b>
+
+                    <br><br>
+
+                    FalkorDB consegue entender:
+                    <br><br>
+
+                    • gostos
+                    <br>
+                    • afinidades
+                    <br>
+                    • comportamento
+                    <br>
+                    • conexões ocultas
+
+                </div>
+
+            `;
+        }
+
+        function showGraphRAG() {
+
+            clearHighlights();
+
+            cy.elements().remove();
+
+            cy.add([
+
+                { data: { id: 'documento', label: 'Documento' } },
+                { data: { id: 'llm', label: 'LLM' } },
+                { data: { id: 'falkordb', label: 'FalkorDB' } },
+                { data: { id: 'entidades', label: 'Entidades' } },
+                { data: { id: 'relacoes', label: 'Relações' } },
+                { data: { id: 'contexto', label: 'Contexto' } },
+                { data: { id: 'resposta', label: 'Resposta IA' } },
+
+                { data: { source: 'documento', target: 'entidades', label: 'extrai' } },
+                { data: { source: 'entidades', target: 'relacoes', label: 'conecta' } },
+                { data: { source: 'relacoes', target: 'falkordb', label: 'armazena' } },
+                { data: { source: 'llm', target: 'falkordb', label: 'consulta' } },
+                { data: { source: 'falkordb', target: 'contexto', label: 'retorna' } },
+                { data: { source: 'contexto', target: 'resposta', label: 'gera' } }
+
+            ]);
+
+            cy.layout({
+                name: 'cose',
+                animate: true,
+                padding: 40
+            }).run();
+
+            document.getElementById('result').innerHTML = `
+
+                <div class="query-result">
+
+                    <b>GraphRAG + FalkorDB</b>
+
+                    <br><br>
+
+                    O LLM deixa de olhar apenas texto.
+
+                    <br><br>
+
+                    Ele passa a entender:
+                    <br><br>
+
+                    • entidades
+                    <br>
+                    • conexões
+                    <br>
+                    • contexto
+                    <br>
+                    • relacionamentos
+                    <br>
+                    • dependências
+
+                </div>
+
+            `;
+
+        }
+
+        function resetGraph() {
+
+            clearHighlights();
+
+            cy.elements().remove();
+
+            cy.add(initialElements);
+
+            cy.layout({
+                name: 'cose',
+                animate: true,
+                padding: 40
+            }).run();
+
+            document.getElementById('result').innerHTML = `
+
+                <div class="query-result">
+
+                    Grafo resetado.
+
+                </div>
+
+            `;
+
+        }
+
+    </script>
+
+</body>
+
+</html>
