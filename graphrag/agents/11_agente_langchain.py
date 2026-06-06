@@ -17,7 +17,7 @@ load_dotenv()
 # CONFIGURAÇÃO DO MODELO
 # =========================
 
-MODEL = os.getenv("MODEL", "gpt-oss")
+MODEL = os.getenv("MODEL", "gpt-oss:20b-cloud")
 MODEL_PROVIDER = os.getenv("MODEL_PROVIDER", "ollama")
 BASE_URL = os.getenv("BASE_URL", "http://localhost:11434")
 TEMPERATURE = float(os.getenv("TEMPERATURE", "0"))
