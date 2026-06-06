@@ -1,4 +1,4 @@
-# Exemplo 11: agente LangChain usando Ollama/gpt-oss para consultar o grafo social
+# agente LangChain usando Ollama/gpt-oss para consultar o grafo social
 
 import os
 from typing import List
@@ -17,7 +17,7 @@ load_dotenv()
 # CONFIGURAÇÃO DO MODELO
 # =========================
 
-MODEL = os.getenv("MODEL", "gpt-oss")
+MODEL = os.getenv("MODEL", "gpt-oss:20b-cloud")
 MODEL_PROVIDER = os.getenv("MODEL_PROVIDER", "ollama")
 BASE_URL = os.getenv("BASE_URL", "http://localhost:11434")
 TEMPERATURE = float(os.getenv("TEMPERATURE", "0"))
@@ -168,7 +168,7 @@ agent = create_agent(
 # LOOP INTERATIVO
 # =========================
 
-print("Exemplo 11: agente LangChain + Ollama/gpt-oss")
+print("Exemplo: Quando amigos o joão tem?")
 print("Digite 'sair' para encerrar.")
 
 while True:
