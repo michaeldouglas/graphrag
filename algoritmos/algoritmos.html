@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FalkorDB Graph Algorithms Academy</title>
+<style>
+:root{
+  --bg:#0b1020;
+  --panel:#111827;
+  --panel-2:#020617;
+  --muted:#94a3b8;
+  --text:#e5e7eb;
+  --line:#334155;
+  --blue:#3b82f6;
+  --green:#22c55e;
+  --yellow:#facc15;
+  --red:#ef4444;
+  --cyan:#06b6d4;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh}
+.sidebar{width:300px;background:var(--panel);height:100vh;padding:20px;position:sticky;top:0;border-right:1px solid #1f2937}
+.brand{display:flex;gap:12px;align-items:center;margin-bottom:20px}
+.brand-mark{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,var(--blue),var(--cyan));display:grid;place-items:center;font-weight:800}
+.brand h2{font-size:20px;margin:0}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.menu{display:grid;gap:8px}
+.menu button{width:100%;padding:12px;border:1px solid #263244;border-radius:8px;background:#172033;color:white;cursor:pointer;text-align:left}
+.menu button.active{background:#1d4ed8;border-color:#60a5fa}
+.menu small{display:block;color:#cbd5e1;margin-top:3px}
+.main{flex:1;padding:24px;overflow:auto;height:100vh}
+.layout{display:grid;grid-template-columns:minmax(0,1.4fr) 360px;gap:18px}
+.card,.panel{background:var(--panel);border:1px solid #1f2937;border-radius:8px;padding:18px}
+.hero{margin-bottom:18px}
+h1{margin:0 0 8px;font-size:32px;line-height:1.1}
+h3{margin:18px 0 8px}
+.subtitle{color:var(--muted);line-height:1.45;margin:0}
+.progress{height:12px;background:#1f2937;border-radius:10px;overflow:hidden;margin:14px 0}
+.bar{height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan));border-radius:10px;transition:width .25s}
+.timeline{display:grid;grid-template-columns:repeat(auto-fit,minmax(86px,1fr));gap:8px;margin:12px 0 16px}
+.timeline button{min-height:42px;border:1px solid #263244;border-radius:8px;background:#172033;color:#cbd5e1;cursor:pointer;font-size:12px}
+.timeline button.done{border-color:#2563eb;color:white}
+.timeline button.active{background:#2563eb;border-color:#93c5fd;color:white}
+.step-head{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.badge{border:1px solid #334155;border-radius:999px;padding:5px 10px;color:#cbd5e1;font-size:13px;white-space:nowrap}
+.info,.code{background:var(--panel-2);padding:13px;border-radius:8px;white-space:pre-wrap;line-height:1.55;border:1px solid #172033}
+.stage{background:var(--panel-2);border-radius:8px;padding:10px;margin:15px 0;border:1px solid #172033}
+svg{width:100%;height:360px;display:block}
+.nav-row{display:flex;gap:10px;flex-wrap:wrap}
+button.nav{padding:10px 16px;border:none;border-radius:8px;background:#2563eb;color:white;cursor:pointer}
+button.nav.secondary{background:#243244}
+button.nav:disabled{opacity:.45;cursor:not-allowed}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.metric{background:var(--panel-2);border:1px solid #172033;border-radius:8px;padding:12px}
+.metric strong{display:block;font-size:20px}
+.metric span{color:var(--muted);font-size:12px}
+.legend{display:flex;gap:10px;flex-wrap:wrap;color:#cbd5e1;font-size:13px;margin-top:8px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px}
+.side-stack{display:grid;gap:18px}
+.takeaways{margin:0;padding-left:18px;line-height:1.55}
+.takeaways li{margin-bottom:7px}
+.result-table{width:100%;border-collapse:collapse;font-size:14px}
+.result-table th,.result-table td{border-bottom:1px solid #1f2937;padding:9px;text-align:left}
+.result-table th{color:#cbd5e1;font-weight:700}
+.result-table td{color:#e5e7eb}
+.mini-label{color:var(--muted);font-size:13px;margin:0 0 8px}
+.pill-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.pill{border:1px solid #334155;border-radius:999px;padding:5px 9px;color:#cbd5e1;font-size:12px}
+.insight{border-left:4px solid var(--cyan)}
+@media(max-width:920px){
+  body{display:block}
+  .sidebar{width:auto;height:auto;position:static}
+  .layout{grid-template-columns:1fr}
+  .main{height:auto}
+}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-mark">G</div>
+    <div>
+      <h2>FalkorDB Academy</h2>
+      <p>Algoritmos de grafos na prática</p>
+    </div>
+  </div>
+  <div class="menu" id="menu"></div>
+</aside>
+
+<main class="main">
+  <section class="hero">
+    <h1 id="title"></h1>
+    <p class="subtitle" id="summary"></p>
+  </section>
+
+  <section class="layout">
+    <div class="card">
+      <div class="progress"><div id="bar" class="bar"></div></div>
+      <div class="timeline" id="timeline"></div>
+      <div class="step-head">
+        <h3 id="stepTitle"></h3>
+        <span class="badge" id="stepCount"></span>
+      </div>
+
+      <div class="info" id="explanation"></div>
+
+      <div class="stage">
+        <svg id="graph" viewBox="0 0 760 360" role="img" aria-label="Visualizacao do grafo"></svg>
+        <div class="legend" id="legend"></div>
+      </div>
+
+      <div class="nav-row">
+        <button class="nav secondary" id="prevBtn" onclick="prevStep()">Anterior</button>
+        <button class="nav" id="nextBtn" onclick="nextStep()">Próximo</button>
+        <button class="nav secondary" id="playBtn" onclick="togglePlay()">Reproduzir</button>
+      </div>
+
+      <div class="metrics" id="metrics"></div>
+    </div>
+
+    <aside class="side-stack">
+      <div class="panel">
+        <h3>Quando usar</h3>
+        <ul class="takeaways" id="when"></ul>
+      </div>
+
+      <div class="panel insight">
+        <h3>Leitura do resultado</h3>
+        <p class="mini-label" id="insight"></p>
+        <div class="pill-row" id="concepts"></div>
+      </div>
+
+      <div class="panel">
+        <h3>Uso no FalkorDB</h3>
+        <div class="code" id="code"></div>
+      </div>
+
+      <div class="panel">
+        <h3>Resultado esperado</h3>
+        <div id="result"></div>
+      </div>
+
+      <div class="panel">
+        <h3>Casos Reais</h3>
+        <div class="info" id="real"></div>
+      </div>
+
+      <div class="panel">
+        <h3>Complexidade</h3>
+        <div class="info" id="complexity"></div>
+      </div>
+    </aside>
+  </section>
+</main>
+
+<script>
+const algorithms={
+  bfs:{
+    label:"BFS",
+    hint:"Busca em largura",
+    title:"BFS - Breadth First Search",
+    summary:"Explora a vizinhanca em camadas. E o algoritmo certo quando a pergunta principal e: quem esta a 1, 2 ou 3 saltos de distancia?",
+    code:`MATCH (start:Person {name:'Joao'})
+CALL algo.BFS(start, {
+  maxDepth: 2,
+  relationshipTypes: ['KNOWS']
+})
+YIELD node, depth
+RETURN node.name AS pessoa, depth
+ORDER BY depth;`,
+    real:"Redes sociais, recomendacao de amigos, expansao de contexto para GraphRAG e descoberta de entidades proximas.",
+    complexity:"O(V + E), porque cada vertice e cada relacionamento relevante sao visitados uma vez.",
+    when:["Encontrar vizinhos por distancia.","Limitar expansao de contexto em GraphRAG.","Responder perguntas do tipo quem esta perto de quem."],
+    metrics:[["Visitados","3"],["Profundidade","2"],["Fila","Camadas"]],
+    insight:"O resultado mais importante nao e apenas a lista de pessoas, mas a distancia de cada uma a partir da origem.",
+    concepts:["fila","camadas","profundidade maxima","visitados"],
+    result:[["pessoa","depth"],["Joao","0"],["Maria","1"],["Carlos","2"]],
+    steps:[
+      ["Pergunta de negocio","Joao quer entender sua vizinhanca imediata sem varrer a rede inteira. Comecamos pela origem e definimos uma profundidade maxima."],
+      ["Camada 0","Joao entra na fila. Ele e o unico no conhecido e recebe distancia 0."],
+      ["Camada 1","Maria e encontrada a partir de Joao. Ela entra na fila e passa a compor a primeira camada de proximidade."],
+      ["Camada 2","Carlos e descoberto a partir de Maria. Agora sabemos que Carlos esta a dois saltos de Joao."],
+      ["Resultado","A busca retorna as pessoas proximas com sua distancia. Isso evita ruido e reduz custo em grafos grandes."]
+    ]
+  },
+  sp:{
+    label:"Shortest Path",
+    hint:"Menor caminho",
+    title:"Shortest Path",
+    summary:"Compara rotas entre duas entidades e destaca a conexao mais curta, deixando a explicacao do relacionamento facil de auditar.",
+    code:`MATCH (a:Person {name:'Joao'}), (b:Person {name:'Carlos'})
+CALL algo.shortestPath(a, b, {
+  relationshipTypes: ['KNOWS','WORKED_WITH']
+})
+YIELD path, distance
+RETURN path, distance;`,
+    real:"Investigacao de fraudes, explainability em GraphRAG, lineage de dados e analise de relacoes entre clientes.",
+    complexity:"Sem pesos costuma ser O(V + E). Com pesos, uma implementacao estilo Dijkstra tende a O(E log V).",
+    when:["Explicar como duas entidades se conectam.","Encontrar rotas mais curtas.","Reduzir uma rede complexa a uma narrativa verificavel."],
+    metrics:[["Rotas","2"],["Menor","2 saltos"],["Origem-Destino","Joao-Carlos"]],
+    insight:"Aqui a saida precisa ser auditavel: a rota escolhida deve justificar por que duas entidades foram consideradas relacionadas.",
+    concepts:["origem","destino","path","distancia","explicabilidade"],
+    result:[["path","distance"],["Joao -> Maria -> Carlos","2"]],
+    steps:[
+      ["Pergunta","Joao e Carlos estao conectados? Se sim, qual e a explicacao mais curta?"],
+      ["Candidatos","O grafo tem pelo menos dois caminhos: via Maria e via Ana."],
+      ["Comparacao","O algoritmo mede a quantidade de saltos de cada rota candidata."],
+      ["Destaque","A rota Joao -> Maria -> Carlos e destacada como caminho escolhido."],
+      ["Resultado","A resposta deixa de ser apenas sim ou nao: ela mostra a trilha que justifica a conexao."]
+    ]
+  },
+  pr:{
+    label:"PageRank",
+    hint:"Relevancia",
+    title:"PageRank",
+    summary:"Mede importancia por transferencia de relevancia: um no fica forte quando recebe conexoes de outros nos relevantes.",
+    code:`CALL algo.pageRank({
+  label: 'Document',
+  relationshipType: 'CITES',
+  dampingFactor: 0.85,
+  iterations: 20
+})
+YIELD node, score
+RETURN node.title, score
+ORDER BY score DESC;`,
+    real:"Ranking de documentos, priorizacao de fontes para RAG, influencia social e deteccao de paginas centrais.",
+    complexity:"O(k * (V + E)), em que k e o numero de iteracoes ate estabilizar.",
+    when:["Ordenar documentos por autoridade.","Escolher fontes mais relevantes antes de chamar um LLM.","Medir influencia em redes direcionadas."],
+    metrics:[["Iteracoes","20"],["Damping","0.85"],["Top no","Maria"]],
+    insight:"PageRank e mais util quando voce quer priorizar fontes antes de consumir contexto caro ou gerar uma resposta.",
+    concepts:["score","damping factor","iteracoes","ranking"],
+    result:[["documento","score"],["Maria","0.42"],["Doc B","0.21"],["Doc A","0.18"],["Doc C","0.16"]],
+    steps:[
+      ["Problema","Nem todo documento ou pessoa tem o mesmo peso. Precisamos transformar links em um sinal de relevancia."],
+      ["Inicializacao","Todos os nos comecam com a mesma pontuacao."],
+      ["Distribuicao","Cada no envia parte da sua pontuacao para os vizinhos apontados."],
+      ["Repeticao","A transferencia acontece varias vezes ate os valores ficarem estaveis."],
+      ["Ranking","Maria concentra sinais de varios pontos e aparece como no mais relevante."]
+    ]
+  },
+  bt:{
+    label:"Betweenness",
+    hint:"Ponte entre grupos",
+    title:"Betweenness Centrality",
+    summary:"Encontra quem fica no meio dos caminhos importantes. E excelente para detectar pontes, gargalos e pessoas estrategicas.",
+    code:`CALL algo.betweenness({
+  label: 'Person',
+  relationshipType: 'KNOWS'
+})
+YIELD node, score
+RETURN node.name, score
+ORDER BY score DESC;`,
+    real:"Descoberta de influenciadores, analise de gargalos operacionais, risco sistemico e pontos de controle.",
+    complexity:"Mais custoso em grafos grandes, pois depende de muitos caminhos minimos entre pares de nos.",
+    when:["Achar quem conecta comunidades.","Identificar gargalos ou pontos de falha.","Priorizar entidades para investigacao."],
+    metrics:[["Pontes","1"],["Score alto","Maria"],["Grupos","2"]],
+    insight:"Um score alto indica que o no aparece muito como passagem, mesmo que nao tenha o maior numero de conexoes diretas.",
+    concepts:["caminhos minimos","ponte","gargalo","centralidade"],
+    result:[["pessoa","score"],["Maria","1.00"],["Joao","0.00"],["Carlos","0.00"],["Ana","0.00"]],
+    steps:[
+      ["Pergunta","Quem conecta partes diferentes da rede?"],
+      ["Caminhos minimos","O algoritmo calcula as melhores rotas entre varios pares de nos."],
+      ["Contagem","Cada vez que um no aparece no meio desses caminhos, ele ganha importancia."],
+      ["Centralidade","Maria aparece como ponte entre Joao e Carlos."],
+      ["Acao","Remover ou monitorar Maria mudaria muito o fluxo da rede."]
+    ]
+  },
+  wcc:{
+    label:"WCC",
+    hint:"Componentes",
+    title:"WCC - Weakly Connected Components",
+    summary:"Separa o grafo em ilhas conectadas. Ajuda a descobrir grupos isolados, duplicidades e sub-redes independentes.",
+    code:`CALL algo.wcc({
+  label: 'Person',
+  relationshipType: 'KNOWS'
+})
+YIELD node, componentId
+RETURN componentId, collect(node.name) AS membros
+ORDER BY componentId;`,
+    real:"Segmentacao de clientes, auditoria de bases, identificacao de clusters isolados e saneamento de dados.",
+    complexity:"O(V + E), parecido com uma busca que marca todos os nos de cada componente.",
+    when:["Descobrir quantos grupos desconectados existem.","Separar processamento por subgrafo.","Encontrar entidades isoladas."],
+    metrics:[["Componentes","2"],["Maior grupo","3 nos"],["Isolamento","Detectado"]],
+    insight:"WCC transforma uma rede baguncada em grupos operacionais. Depois disso, cada componente pode ser analisado separadamente.",
+    concepts:["componentId","subgrafo","ilha","conectividade"],
+    result:[["componentId","membros"],["1","Joao, Maria, Carlos"],["2","Pedro, Ana"]],
+    steps:[
+      ["Problema","A rede pode parecer uma coisa so, mas talvez existam ilhas sem conexao entre si."],
+      ["Primeira busca","O algoritmo parte de Joao e marca todos os conectados a ele."],
+      ["Componente A","Joao, Maria e Carlos recebem o mesmo identificador."],
+      ["Nova busca","Pedro e Ana ainda nao foram visitados, entao iniciam outro componente."],
+      ["Resultado","Agora cada no pertence a uma ilha, o que facilita auditoria e processamento separado."]
+    ]
+  },
+  cdlp:{
+    label:"CDLP",
+    hint:"Comunidades",
+    title:"CDLP - Community Detection",
+    summary:"Propaga rotulos entre vizinhos ate comunidades emergirem. E uma forma rapida de descobrir agrupamentos naturais.",
+    code:`CALL algo.CDLP({
+  label: 'Customer',
+  relationshipType: 'BOUGHT_WITH',
+  maxIterations: 10
+})
+YIELD node, communityId
+RETURN communityId, collect(node.name) AS clientes;`,
+    real:"Marketing, recomendacao, comunidades sociais, segmentacao de clientes e agrupamento de entidades similares.",
+    complexity:"Eficiente para grafos grandes: O(k * (V + E)), com k sendo o numero de iteracoes.",
+    when:["Encontrar comunidades sem regras manuais.","Criar segmentos baseados em comportamento.","Agrupar entidades para analise posterior."],
+    metrics:[["Comunidades","2"],["Iteracoes","4"],["Regra","Vizinhos"]],
+    insight:"CDLP e bom para uma primeira segmentacao porque deixa os grupos emergirem a partir das conexoes locais.",
+    concepts:["label propagation","votacao local","comunidade","convergencia"],
+    result:[["communityId","membros"],["A","Joao, Maria, Carlos"],["B","Pedro, Ana"]],
+    steps:[
+      ["Problema","Queremos descobrir grupos naturais sem escrever uma regra fixa."],
+      ["Rotulos iniciais","Cada no comeca com seu proprio rotulo."],
+      ["Votacao local","Cada no observa os vizinhos e adota o rotulo mais frequente."],
+      ["Estabilidade","Depois de algumas rodadas, os rotulos param de mudar muito."],
+      ["Resultado","As comunidades aparecem como segmentos prontos para analise ou recomendacao."]
+    ]
+  }
+};
+
+const positions={
+  joao:[110,180], maria:[320,100], carlos:[550,180], ana:[320,260], pedro:[130,80], lucas:[130,280], hub:[390,180]
+};
+
+const els={
+  menu:document.getElementById('menu'),
+  title:document.getElementById('title'),
+  summary:document.getElementById('summary'),
+  bar:document.getElementById('bar'),
+  stepTitle:document.getElementById('stepTitle'),
+  stepCount:document.getElementById('stepCount'),
+  explanation:document.getElementById('explanation'),
+  graph:document.getElementById('graph'),
+  legend:document.getElementById('legend'),
+  timeline:document.getElementById('timeline'),
+  prevBtn:document.getElementById('prevBtn'),
+  nextBtn:document.getElementById('nextBtn'),
+  playBtn:document.getElementById('playBtn'),
+  metrics:document.getElementById('metrics'),
+  when:document.getElementById('when'),
+  insight:document.getElementById('insight'),
+  concepts:document.getElementById('concepts'),
+  code:document.getElementById('code'),
+  result:document.getElementById('result'),
+  real:document.getElementById('real'),
+  complexity:document.getElementById('complexity')
+};
+
+let current='bfs';
+let step=0;
+let playTimer=null;
+
+function initMenu(){
+  els.menu.innerHTML=Object.entries(algorithms).map(([key,item])=>
+    `<button id="menu-${key}" onclick="loadAlgo('${key}')"><strong>${item.label}</strong><small>${item.hint}</small></button>`
+  ).join('');
+}
+
+function loadAlgo(key){
+  current=key;
+  step=0;
+  stopPlay();
+  render();
+}
+
+function nextStep(){
+  if(step<algorithms[current].steps.length-1) {
+    step++;
+  } else {
+    stopPlay();
+  }
+  render();
+}
+
+function prevStep(){
+  if(step>0) step--;
+  stopPlay();
+  render();
+}
+
+function goToStep(index){
+  step=index;
+  stopPlay();
+  render();
+}
+
+function togglePlay(){
+  if(playTimer){
+    stopPlay();
+    return;
+  }
+  els.playBtn.innerText='Pausar';
+  playTimer=setInterval(nextStep,1400);
+}
+
+function stopPlay(){
+  if(!playTimer) return;
+  clearInterval(playTimer);
+  playTimer=null;
+  els.playBtn.innerText='Reproduzir';
+}
+
+function render(){
+  const d=algorithms[current];
+  els.title.innerText=d.title;
+  els.summary.innerText=d.summary;
+  els.stepTitle.innerText=d.steps[step][0];
+  els.explanation.innerText=d.steps[step][1];
+  els.code.innerText=d.code;
+  els.real.innerText=d.real;
+  els.complexity.innerText=d.complexity;
+  els.stepCount.innerText=`Passo ${step+1} de ${d.steps.length}`;
+  els.bar.style.width=`${((step+1)/d.steps.length)*100}%`;
+  els.prevBtn.disabled=step===0;
+  els.nextBtn.disabled=step===d.steps.length-1;
+  els.when.innerHTML=d.when.map(item=>`<li>${item}</li>`).join('');
+  els.metrics.innerHTML=d.metrics.map(([label,value])=>`<div class="metric"><strong>${value}</strong><span>${label}</span></div>`).join('');
+  els.timeline.innerHTML=d.steps.map(([label],index)=>
+    `<button class="${index<step?'done':''} ${index===step?'active':''}" onclick="goToStep(${index})">${index+1}. ${label}</button>`
+  ).join('');
+  els.insight.innerText=d.insight;
+  els.concepts.innerHTML=d.concepts.map(item=>`<span class="pill">${item}</span>`).join('');
+  els.result.innerHTML=renderTable(d.result);
+  Object.keys(algorithms).forEach(key=>document.getElementById(`menu-${key}`).classList.toggle('active',key===current));
+  draw();
+}
+
+function renderTable(rows){
+  const [head,...body]=rows;
+  return `<table class="result-table">
+    <thead><tr>${head.map(cell=>`<th>${cell}</th>`).join('')}</tr></thead>
+    <tbody>${body.map(row=>`<tr>${row.map(cell=>`<td>${cell}</td>`).join('')}</tr>`).join('')}</tbody>
+  </table>`;
+}
+
+function edge(from,to,color='#64748b',width=3,dash=''){
+  const [x1,y1]=positions[from];
+  const [x2,y2]=positions[to];
+  els.graph.innerHTML+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${color}" stroke-width="${width}" stroke-linecap="round" stroke-dasharray="${dash}"/>`;
+}
+
+function node(key,label,color='#2563eb',note=''){
+  const [x,y]=positions[key];
+  els.graph.innerHTML+=`
+    <circle cx="${x}" cy="${y}" r="34" fill="${color}" stroke="#dbeafe" stroke-width="2"/>
+    <text x="${x}" y="${y+5}" fill="white" text-anchor="middle" font-size="15" font-weight="700">${label}</text>
+    ${note ? `<text x="${x}" y="${y+56}" fill="#cbd5e1" text-anchor="middle" font-size="13">${note}</text>` : ''}
+  `;
+}
+
+function draw(){
+  els.graph.innerHTML='';
+  els.legend.innerHTML=`
+    <span><i class="dot" style="background:var(--blue)"></i>No comum</span>
+    <span><i class="dot" style="background:var(--green)"></i>Visitado/grupo A</span>
+    <span><i class="dot" style="background:var(--yellow)"></i>Destaque</span>
+    <span><i class="dot" style="background:var(--red)"></i>Grupo B</span>
+  `;
+
+  if(current==='bfs'){
+    edge('joao','maria',step>=2?varColor('green'):'#64748b',step>=2?5:3);
+    edge('maria','carlos',step>=3?varColor('green'):'#64748b',step>=3?5:3);
+    node('joao','Joao',varColor('green'),'d=0');
+    node('maria','Maria',step>=2?varColor('green'):varColor('blue'),step>=2?'d=1':'');
+    node('carlos','Carlos',step>=3?varColor('green'):varColor('blue'),step>=3?'d=2':'');
+  }
+
+  if(current==='sp'){
+    edge('joao','maria',step>=3?varColor('yellow'):'#64748b',step>=3?6:3);
+    edge('maria','carlos',step>=3?varColor('yellow'):'#64748b',step>=3?6:3);
+    edge('joao','ana','#64748b',3,'7 7');
+    edge('ana','carlos','#64748b',3,'7 7');
+    node('joao','Joao',varColor('blue'));
+    node('maria','Maria',step>=3?varColor('yellow'):varColor('blue'),'2 saltos');
+    node('ana','Ana',varColor('blue'),'alternativa');
+    node('carlos','Carlos',varColor('blue'));
+  }
+
+  if(current==='pr'){
+    edge('pedro','hub',step>=2?varColor('cyan'):'#64748b',4);
+    edge('joao','hub',step>=2?varColor('cyan'):'#64748b',4);
+    edge('lucas','hub',step>=2?varColor('cyan'):'#64748b',4);
+    node('pedro','Doc A',varColor('blue'),'0.18');
+    node('joao','Doc B',varColor('blue'),'0.21');
+    node('lucas','Doc C',varColor('blue'),'0.16');
+    node('hub','Maria',step>=4?varColor('yellow'):varColor('blue'),step>=4?'score alto':'');
+  }
+
+  if(current==='bt'){
+    edge('joao','maria','#64748b',4);
+    edge('maria','carlos','#64748b',4);
+    edge('maria','ana','#64748b',4);
+    node('joao','Grupo A',varColor('blue'));
+    node('maria','Maria',step>=3?varColor('yellow'):varColor('blue'),step>=3?'ponte':'');
+    node('carlos','Grupo B',varColor('blue'));
+    node('ana','Grupo C',varColor('blue'));
+  }
+
+  if(current==='wcc'||current==='cdlp'){
+    const stable=current==='cdlp'&&step>=3;
+    edge('joao','maria',varColor('green'),4);
+    edge('maria','carlos',varColor('green'),4);
+    edge('pedro','ana',stable?varColor('red'):'#64748b',4);
+    node('joao','Joao',varColor('green'),'comp 1');
+    node('maria','Maria',varColor('green'),'comp 1');
+    node('carlos','Carlos',varColor('green'),'comp 1');
+    node('pedro','Pedro',stable?varColor('red'):varColor('blue'),stable?'com 2':'');
+    node('ana','Ana',stable?varColor('red'):varColor('blue'),stable?'com 2':'');
+  }
+}
+
+function varColor(name){
+  return getComputedStyle(document.documentElement).getPropertyValue(`--${name}`).trim();
+}
+
+initMenu();
+loadAlgo('bfs');
+
+document.addEventListener('keydown',event=>{
+  if(event.key==='ArrowRight') nextStep();
+  if(event.key==='ArrowLeft') prevStep();
+  if(event.key===' ') {
+    event.preventDefault();
+    togglePlay();
+  }
+});
+</script>
+</body>
+</html>
